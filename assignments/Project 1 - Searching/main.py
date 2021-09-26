@@ -1,87 +1,81 @@
 import random
+import math
 import time
+
+random.seed(10)
+ALLOWED_NUMBERS = 10000000
+LIST_LENGTH = 1000000
 
 
 def linear_search(lyst, target):
-    """
-    Returns the index of the target item in the list.
-    If the target is not in the list, returns -1.
-    """
     for i in range(len(lyst)):
         if lyst[i] == target:
-            return i
-    return -1
+            return True
+    return False
 
 
-def binary_search(lyst, target):
-    """
-    Returns the index of the target item in the list.
-    If the target is not in the list, returns -1.
-    """
-    first = 0
-    last = len(lyst) - 1
-    while first <= last:
-        mid = (first + last) // 2
+def recursive_binary_search(lyst, target):
+    if len(lyst) == 0:
+        return False
+    else:
+        mid = len(lyst) // 2
         if lyst[mid] == target:
-            return mid
+            return True
         elif lyst[mid] < target:
-            first = mid + 1
+            return recursive_binary_search(lyst[mid + 1:], target)
         else:
-            last = mid - 1
-    return -1
+            return recursive_binary_search(lyst[:mid], target)
 
 
 def jump_search(lyst, target):
-    """
-    Returns the index of the target item in the list.
-    If the target is not in the list, returns -1.
-    """
-    step = len(lyst) // 2
-    while step > 0:
-        if lyst[step] == target:
-            return step
-        elif lyst[step] < target:
-            step += len(lyst)
-        else:
-            step -= len(lyst)
-    return -1
+    # https: // www.codespeedy.com/jump-search-algorithm-in-python/
+    gap = math.sqrt(len(lyst))
+    left = 0
+    while(lyst[int(min(gap, len(lyst))-1)] < target):
+        left = gap
+        gap = gap + math.sqrt(len(lyst))
+        if(left >= len(lyst)):
+            break
+    while(lyst[int(left)] < target):
+        left = left + 1
+        if(left == min(gap, len(lyst))):
+            break
+    if(lyst[int(left)] == target):
+        return True
+    return False
 
 
-def generate_large_list():
-    """
-    Generates a list of random integers.
-    """
-    lyst = []
-    ten_million = 1000000
-    ten = 10
-    for i in range(ten):
-        lyst.append(random.randint(0, ten - 1))
-    return lyst
-
-
-def generate_rand_number():
-    """
-    Generates a random number.
-    """
-    return random.randint(0, 9)
+def get_large_list():
+    return random.sample(range(ALLOWED_NUMBERS), k=LIST_LENGTH)
 
 
 def time_function_execution(func, *args):
-    """
-    Times the execution of a function.
-    """
-    start = time.time()
+    start = time.perf_counter()
     func(*args)
-    end = time.time()
+    end = time.perf_counter()
     return end - start
 
 
+def get_test_numbers(lyst):
+    first_item = lyst[0]
+    middle_item = lyst[len(lyst) // 2]
+    last_item = lyst[len(lyst) - 1]
+    unfindable_item = -1
+    return [first_item, middle_item, last_item, unfindable_item]
+
+
+def apply_funtion_repeatedly(testNums, func, randLargeList):
+    print(func.__name__)
+    for i in testNums:
+        print(time_function_execution(func, randLargeList, i))
+
+
 def main():
-    rand_large_list = generate_large_list()
-    rand_int = generate_rand_number()
-    print(time_function_execution(linear_search, rand_large_list, rand_int))
-    print(time_function_execution(binary_search, rand_large_list, rand_int))
-    print(time_function_execution(jump_search, rand_large_list, rand_int))
+    randLargeList = get_large_list()
+    testNums = get_test_numbers(randLargeList)
+    apply_funtion_repeatedly(testNums, linear_search, randLargeList)
+    apply_funtion_repeatedly(testNums, recursive_binary_search, randLargeList)
+    apply_funtion_repeatedly(testNums, jump_search, randLargeList)
 
 
 if __name__ == "__main__":
